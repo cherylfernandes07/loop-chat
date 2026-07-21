@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoopChat — Build Timeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0F1117;
+    --surface:   #181C27;
+    --surface2:  #1F2437;
+    --border:    #2A3050;
+    --border2:   #364060;
+    --text:      #E8EAF2;
+    --muted:     #8892B0;
+    --dim:       #4A5578;
+
+    --purple:    #7C6EF5;
+    --purple-bg: #1A1830;
+    --teal:      #2DD4A0;
+    --teal-bg:   #0D2520;
+    --coral:     #F07050;
+    --coral-bg:  #281510;
+    --blue:      #4DA8F0;
+    --blue-bg:   #0D1E30;
+    --green:     #80C840;
+    --green-bg:  #141F08;
+    --gold:      #F0B840;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* Header */
+  .header {
+    padding: 52px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .header-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .header h1 {
+    font-size: 38px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  .header h1 span {
+    color: var(--purple);
+  }
+
+  .header-desc {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.65;
+    margin-bottom: 24px;
+  }
+
+  .header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .meta-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  /* Main */
+  .main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 40px 0;
+  }
+
+  /* Milestone */
+  .milestone {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin: 28px 0 20px;
+  }
+
+  .milestone.demo {
+    border-color: var(--gold);
+    background: #1E1A08;
+  }
+
+  .milestone-icon {
+    font-size: 18px;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .milestone-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .milestone.demo .milestone-title {
+    color: var(--gold);
+  }
+
+  .milestone-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Phase */
+  .phase {
+    margin-bottom: 32px;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .phase-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .phase-pill.purple { background: var(--purple-bg); color: var(--purple); border: 1px solid #342E70; }
+  .phase-pill.teal   { background: var(--teal-bg);   color: var(--teal);   border: 1px solid #1A4035; }
+  .phase-pill.coral  { background: var(--coral-bg);  color: var(--coral);  border: 1px solid #50281A; }
+  .phase-pill.blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid #1A3850; }
+  .phase-pill.green  { background: var(--green-bg);  color: var(--green);  border: 1px solid #283010; }
+
+  .phase-name {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* Tasks */
+  .tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-left: 1px solid var(--border);
+    margin-left: 10px;
+    padding-left: 24px;
+  }
+
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task:last-child {
+    border-bottom: none;
+  }
+
+  .task-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .dot-purple { background: var(--purple); }
+  .dot-teal   { background: var(--teal); }
+  .dot-coral  { background: var(--coral); }
+  .dot-blue   { background: var(--blue); }
+  .dot-green  { background: var(--green); }
+
+  .task-body { flex: 1; }
+
+  .task-text {
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .task-note {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-style: italic;
+  }
+
+  .task-stretch {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #281A08;
+    color: var(--gold);
+    border: 1px solid #503808;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-style: normal;
+  }
+
+  /* Stack */
+  .stack-section {
+    margin: 44px 0 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .stack-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 16px;
+  }
+
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .stack-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .stack-role {
+    font-size: 10px;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .stack-name {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Footer */
+  .footer {
+    max-width: 780px;
+    margin: 40px auto 0;
+    padding: 0 40px;
+    font-size: 12px;
+    color: var(--dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .header, .main { padding-left: 20px; padding-right: 20px; }
+    .header h1 { font-size: 28px; }
+    .footer { flex-direction: column; gap: 6px; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Nirvaan Labs · AI Agent Builder Challenge</div>
+  <h1>Loop<span>Chat</span></h1>
+  <p class="header-desc">
+    An open-source AI agent that learns your website, engages visitors in real-time chat, captures structured intake, and automatically follows up by email or phone — purpose-built for healthcare providers.
+  </p>
+  <div class="header-meta">
+    <span class="meta-tag">Demo Day: Aug 15</span>
+    <span class="meta-tag">Vertical: Healthcare</span>
+    <span class="meta-tag">Stack: Next.js · Qwen · Qdrant · NeonDB</span>
+    <span class="meta-tag">Model: Open-core / self-hosted</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="milestone">
+    <div class="milestone-icon">🚀</div>
+    <div>
+      <div class="milestone-title">Start now — Jul 20</div>
+      <div class="milestone-sub">Submit application · scaffold repo · set up Alibaba Cloud credentials</div>
+    </div>
+  </div>
+
+  <!-- Week 0 -->
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-pill purple">Week 0 · Jul 20–23</span>
+      <span class="phase-name">Foundation</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-dot dot-purple"></div>
+        <div class="task-body">
+          <div class="task-text">Scaffold Next.js project + NeonDB schema (leads, sessions, transcripts)</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-purple"></div>
+        <div class="task-body">
+          <div class="task-text">Set up Qdrant vector store + Qwen embeddings via Alibaba Cloud</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-purple"></div>
+        <div class="task-body">
+          <div class="task-text">Build URL ingestion pipeline — Firecrawl → chunk → embed → store</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-purple"></div>
+        <div class="task-body">
+          <div class="task-text">Verify RAG retrieval returns accurate, clinic-specific answers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 1 -->
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-pill teal">Week 1 · Jul 24–30</span>
+      <span class="phase-name">Core chat + intake</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-dot dot-teal"></div>
+        <div class="task-body">
+          <div class="task-text">Build embeddable chat widget (Next.js component, iframe-ready)</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-teal"></div>
+        <div class="task-body">
+          <div class="task-text">Wire chat to RAG pipeline — Qwen generates site-aware responses</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-teal"></div>
+        <div class="task-body">
+          <div class="task-text">Build intent classifier — detects booking/inquiry signals mid-conversation</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-teal"></div>
+        <div class="task-body">
+          <div class="task-text">Surface intake form when intent detected (name, email, phone, reason for visit)</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-teal"></div>
+        <div class="task-body">
+          <div class="task-text">Save lead + full transcript to NeonDB</div>
+          <div class="task-note">⚑ End of week 1 checkpoint: full chat + intake flow working end to end</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 2 -->
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-pill coral">Week 2 · Jul 31–Aug 6</span>
+      <span class="phase-name">Follow-up + dashboard</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-dot dot-coral"></div>
+        <div class="task-body">
+          <div class="task-text">Build follow-up email generator — Qwen drafts personalized email from transcript + intake</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-coral"></div>
+        <div class="task-body">
+          <div class="task-text">Integrate Resend for email delivery — triggered automatically post-session</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-coral"></div>
+        <div class="task-body">
+          <div class="task-text">Build clinic dashboard — leads list, transcript view, follow-up status</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-coral"></div>
+        <div class="task-body">
+          <div class="task-text">Add URL ingestion UI to dashboard (paste URL → ingest in &lt;60s)</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-coral"></div>
+        <div class="task-body">
+          <div class="task-text">Vapi voice callback integration <span class="task-stretch">stretch</span></div>
+          <div class="task-note">Only pursue if email flow is solid and deployed by Aug 5</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 3 -->
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-pill blue">Week 3 · Aug 7–13</span>
+      <span class="phase-name">Polish + demo prep</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-dot dot-blue"></div>
+        <div class="task-body">
+          <div class="task-text">Load a real clinic site — test full loop with realistic healthcare content</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-blue"></div>
+        <div class="task-body">
+          <div class="task-text">Fix edge cases: long pages, slow ingestion, malformed intake submissions</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-blue"></div>
+        <div class="task-body">
+          <div class="task-text">Polish chat widget UI — clean, embeddable, healthcare-appropriate feel</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-blue"></div>
+        <div class="task-body">
+          <div class="task-text">Record backup demo video in case of live demo failure</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-blue"></div>
+        <div class="task-body">
+          <div class="task-text">Rehearse 2-minute demo loop: ingest → chat → intake → email → dashboard</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aug 14 -->
+  <div class="phase">
+    <div class="phase-header">
+      <span class="phase-pill green">Aug 14 · Final day</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-dot dot-green"></div>
+        <div class="task-body">
+          <div class="task-text">Freeze code — no new features after noon</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-green"></div>
+        <div class="task-body">
+          <div class="task-text">Deploy to production (Vercel + Railway)</div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="task-dot dot-green"></div>
+        <div class="task-body">
+          <div class="task-text">Prepare pitch slides — problem, solution, demo, open-core business model</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="milestone demo">
+    <div class="milestone-icon">🏆</div>
+    <div>
+      <div class="milestone-title">August 15 — Demo Day</div>
+      <div class="milestone-sub">Show the full loop · close with the HIPAA / open-source pitch · top 20 teams present to VCs</div>
+    </div>
+  </div>
+
+  <!-- Tech stack -->
+  <div class="stack-section">
+    <div class="stack-title">Tech stack</div>
+    <div class="stack-grid">
+      <div class="stack-item">
+        <span class="stack-role">Frontend</span>
+        <span class="stack-name">Next.js</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">LLM / Embeddings</span>
+        <span class="stack-name">Qwen · Alibaba Cloud</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">Vector store</span>
+        <span class="stack-name">Qdrant</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">Database</span>
+        <span class="stack-name">NeonDB (Postgres)</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">Web crawler</span>
+        <span class="stack-name">Firecrawl</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">Email</span>
+        <span class="stack-name">Resend</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">Voice (stretch)</span>
+        <span class="stack-name">Vapi / Bland.ai</span>
+      </div>
+      <div class="stack-item">
+        <span class="stack-role">Deployment</span>
+        <span class="stack-name">Vercel + Railway</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span>Nirvaan Labs · LoopChat · AI Agent Builder Challenge 2025</span>
+  <span>Demo Day: August 15</span>
+</div>
+
+</body>
+</html>
